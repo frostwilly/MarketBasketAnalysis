@@ -5,9 +5,17 @@
  */
 package marketbasketanalysis;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -21,97 +29,50 @@ public class MarketBasketAnalysis {
     private static final double THRESHOLD = 0.4;
 
     public static ArrayList inisialisasi() {
+        Scanner scan = new Scanner(System.in);
         ArrayList<String> items = new ArrayList<>();
         ArrayList<ArrayList<String>> transaction = new ArrayList<>();
-
-        items.add("Onion");
-        items.add("Potato");
-        items.add("Burger");
-        transaction.add(items);
-        items = new ArrayList<>();
-
-        items.add("Potato");
-        items.add("Burger");
-        items.add("Milk");
-        transaction.add(items);
-        items = new ArrayList<>();
-
-        items.add("Milk");
-        items.add("Beer");
-        transaction.add(items);
-        items = new ArrayList<>();
-
-        items.add("Onion");
-        items.add("Potato");
-        items.add("Milk");
-        transaction.add(items);
-        items = new ArrayList<>();
-
-        items.add("Onion");
-        items.add("Potato");
-        items.add("Burger");
-        items.add("Milk");
-        transaction.add(items);
-        items = new ArrayList<>();
-
-        items.add("Onion");
-        items.add("Potato");
-        items.add("Burger");
-        items.add("Milk");
-        items.add("Beer");
-        items.add("Diaper");
-        transaction.add(items);
-        items = new ArrayList<>();
-
-        items.add("Milk");
-        items.add("Diaper");
-        items.add("Beer");
-        transaction.add(items);
-        items = new ArrayList<>();
-
-        items.add("Potato");
-        items.add("Milk");
-        transaction.add(items);
-        items = new ArrayList<>();
-
-        items.add("Bread");
-        items.add("Milk");
-        transaction.add(items);
-        items = new ArrayList<>();
-
-        items.add("Bread");
-        items.add("Diaper");
-        items.add("Beer");
-        items.add("Potato");
-        transaction.add(items);
-        items = new ArrayList<>();
-
-        items.add("Milk");
-        items.add("Diaper");
-        items.add("Beer");
-        items.add("Burger");
-        transaction.add(items);
-        items = new ArrayList<>();
-
-        items.add("Bread");
-        items.add("Milk");
-        items.add("Diaper");
-        items.add("Beer");
-        transaction.add(items);
-        items = new ArrayList<>();
-
-        items.add("Bread");
-        items.add("Milk");
-        items.add("Diaper");
-        items.add("Onion");
-        transaction.add(items);
-        items = new ArrayList<>();
+        
+        System.out.print("Masukkan path file transaksi: ");
+        String path = scan.next();
+        
+        File file = new File(path);
+        
+        try {
+            BufferedReader buffReader = new BufferedReader(new FileReader(file));
+            String buffer = buffReader.readLine();
+            
+            while (buffer != null) {
+                String[] temp = buffer.split(" ");
+                items.addAll(Arrays.asList(temp));
+                transaction.add(items);
+                buffer = buffReader.readLine();
+                items = new ArrayList<>();
+            }
+            
+        } catch (IOException ex) {
+            Logger.getLogger(MarketBasketAnalysis.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         return transaction;
+    }
+    
+    public static HashMap probabilityCount(HashMap<String, Integer> itemOccurence, ArrayList<ArrayList> transaction){
+        HashMap<String, Double> itemProbability = new HashMap<>();
+
+        for (Map.Entry<String, Integer> entry : itemOccurence.entrySet()) {
+            String key = entry.getKey();
+            int value = entry.getValue();
+            double probability = (double) value / transaction.size();
+            itemProbability.put(key, probability);
+        }
+        
+        return itemProbability;
     }
 
     public static HashMap firstProbabilityCount(ArrayList<ArrayList> transaction) {
         HashMap<String, Integer> itemOccurence = new HashMap<>();
+        
         for (ArrayList<String> arrayList : transaction) {
             for (String item : arrayList) {
                 if (!itemOccurence.containsKey(item)) {
@@ -122,20 +83,12 @@ public class MarketBasketAnalysis {
             }
         }
 
-        HashMap<String, Double> itemProbability = new HashMap<>();
-
-        for (Map.Entry<String, Integer> entry : itemOccurence.entrySet()) {
-            String key = entry.getKey();
-            int value = entry.getValue();
-            double probability = (double) value / transaction.size();
-            itemProbability.put(key, probability);
-        }
-
-        return itemProbability;
+        return probabilityCount(itemOccurence, transaction);
     }
 
     public static HashMap secondProbabilityCount(ArrayList<String> combination, ArrayList<ArrayList> transaction) {
         HashMap<String, Integer> itemOccurence = new HashMap<>();
+        
         for (int i = 0; i < combination.size(); i++) {
             for (int j = i + 1; j < combination.size(); j++) {
                 for (ArrayList<String> list : transaction) {
@@ -152,16 +105,7 @@ public class MarketBasketAnalysis {
             }
         }
 
-        HashMap<String, Double> itemProbability = new HashMap<>();
-
-        for (Map.Entry<String, Integer> entry : itemOccurence.entrySet()) {
-            String key = entry.getKey();
-            int value = entry.getValue();
-            double probability = (double) value / transaction.size();
-            itemProbability.put(key, probability);
-        }
-
-        return itemProbability;
+        return probabilityCount(itemOccurence, transaction);
     }
 
     public static ArrayList<String> removeItemByThreshold(HashMap<String, Double> transaction) {
@@ -192,13 +136,37 @@ public class MarketBasketAnalysis {
 
     public static void main(String[] args) {
         // TODO code application logic here
+        /*
+            Isi ArrayList of ArrayList String of transaction dengan file data yang diinput
+            Itung probabilitas setiap item terhadap keseluruhan transaksi
+            Hilangkan item yang probabilitasnya di bawah THRESHOLD (0.4)
+            Itung kembali probabilitas kombinasi dari 2 item terhadap keseluruhan transaksi
+            Tampilkan hasilnya
+        */
         ArrayList<ArrayList> transaction = inisialisasi();
         HashMap<String, Double> itemProbability = firstProbabilityCount(transaction);
+        
+        System.out.println("First Result: ");
+        for (Map.Entry<String, Double> entry : itemProbability.entrySet()) {
+            String key = entry.getKey();
+            Double value = entry.getValue();
+            
+            System.out.println(key + " " + value);
+        }
+        
+        System.out.println("");
         ArrayList<String> remainedItem = removeItemByThreshold(itemProbability);
         
-        System.out.println();
+        System.out.print("Remaining item: ");
+        for (String string : remainedItem) {
+            System.out.print(string + " ");
+        }
+        
+        System.out.println("\n");
         itemProbability = secondProbabilityCount(remainedItem, transaction);
 
+        System.out.println("Second Result: ");
+        
         for (Map.Entry<String, Double> entry : itemProbability.entrySet()) {
             String key = entry.getKey();
             Double value = entry.getValue();
