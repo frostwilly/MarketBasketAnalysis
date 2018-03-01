@@ -18,7 +18,7 @@ public class MarketBasketAnalysis {
     /**
      * @param args the command line arguments
      */
-    
+    private final double THRESHOLD = 0.4;
     public static ArrayList inisialisasi(){
         ArrayList<String> items = new ArrayList<>();
         ArrayList<ArrayList<String>> transaction = new ArrayList<>();
