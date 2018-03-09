@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -29,12 +30,10 @@ public class MarketBasketAnalysis {
     private static final double THRESHOLD = 0.4;
 
     public static ArrayList inisialisasi() {
-        Scanner scan = new Scanner(System.in);
         ArrayList<String> items = new ArrayList<>();
         ArrayList<ArrayList<String>> transaction = new ArrayList<>();
         
-        System.out.print("Masukkan path file transaksi: ");
-        String path = scan.next();
+        String path = JOptionPane.showInputDialog(null, "Masukkan path file transaksi: ");
         
         File file = new File(path);
         
@@ -167,12 +166,16 @@ public class MarketBasketAnalysis {
 
         System.out.println("Second Result: ");
         
+        String message = "Result:\n";
         for (Map.Entry<String, Double> entry : itemProbability.entrySet()) {
             String key = entry.getKey();
             Double value = entry.getValue();
 
+            message += key + "     " + value + "\n";
             System.out.println(key + " " + value);
         }
+        
+        JOptionPane.showMessageDialog(null, message);
     }
 
 }
